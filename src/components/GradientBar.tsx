@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { getHandleValue } from '../utils/utils.js'
 import { usePicker } from '../context.js'
 import { low, high } from '../utils/formatters.js'
@@ -93,6 +93,7 @@ const GradientBar = () => {
   } = usePicker()
   const [dragging, setDragging] = useState(false)
   const [inFocus, setInFocus] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   function force90degLinear(color: string) {
     return color.replace(
@@ -110,6 +111,16 @@ const GradientBar = () => {
     createGradientStr(newColors)
   }
 
+
+  const handleMove = useCallback((e: any) => {
+    if (dragging && containerRef.current !== null) {
+      const r = containerRef.current.getBoundingClientRect();
+      const px = e.clientX  - r.left;
+      const w = r.right - r.left;
+      handleGradient(currentColor, Math.min(1, Math.max((px / w), 0)) * 100);
+    }
+  }, [currentColor, dragging, handleGradient]);
+
   useEffect(() => {
     const selectedEl = window?.document?.getElementById(
       `gradient-handle-${selectedColor}`
@@ -117,7 +128,11 @@ const GradientBar = () => {
     if (selectedEl) {
       selectedEl.focus()
     }
-  }, [selectedColor])
+    document.body.addEventListener('mousemove', handleMove);
+    return () => {
+      document.body.removeEventListener('mousemove', handleMove);
+    }
+  }, [selectedColor, handleMove])
 
   const stopDragging = () => {
     setDragging(false)
@@ -130,11 +145,6 @@ const GradientBar = () => {
     }
   }
 
-  const handleMove = (e: any) => {
-    if (dragging) {
-      handleGradient(currentColor, getHandleValue(e))
-    }
-  }
 
   const handleKeyboard = (e: any) => {
     if (isGradient) {
@@ -171,6 +181,7 @@ const GradientBar = () => {
       id="gradient-bar"
     >
       <div
+        ref={containerRef}
         style={{
           width: squareWidth,
           height: 14,
@@ -178,7 +189,6 @@ const GradientBar = () => {
           borderRadius: 10,
         }}
         onMouseDown={(e) => handleDown(e)}
-        onMouseMove={(e) => handleMove(e)}
       />
       {colors?.map((c: any, i) => (
         <Handle
