@@ -1,0 +1,42 @@
+import React, { ReactNode } from 'react';
+import { GradientProps } from './shared/types.js';
+export default function PickerContextWrapper({ value, classes, children, onChange, squareWidth, hideOpacity, squareHeight, }: PCWProps): React.JSX.Element;
+export declare function usePicker(): PickerContextProps;
+type PCWProps = {
+    classes: any;
+    value: string;
+    squareWidth: number;
+    children: ReactNode;
+    squareHeight: number;
+    hideOpacity: boolean;
+    onChange: (arg0: string) => void;
+};
+export type PickerContextProps = {
+    hc: any;
+    classes: any;
+    value: string;
+    colors: GradientProps[];
+    degrees: number;
+    onChange: (arg0: string) => void;
+    inputType: string;
+    tinyColor: any;
+    isGradient: boolean;
+    squareWidth: number;
+    hideOpacity: boolean;
+    currentLeft: number;
+    deletePoint: () => void;
+    squareHeight: number;
+    setInputType: (arg0: string) => void;
+    gradientType?: string;
+    handleChange: (arg0: string) => void;
+    currentColor: string;
+    selectedColor: number;
+    setHc: (arg0: any) => void;
+    handleGradient: (arg0: string, arg1?: number) => void;
+    createGradientStr: (arg0: GradientProps[]) => void;
+    previous: {
+        color?: string;
+        gradient?: string;
+    };
+};
+export {};
