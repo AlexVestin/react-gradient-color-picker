@@ -1,13 +1,14 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { usePicker } from '../context.js'
 import usePaintHue from '../hooks/usePaintHue.js'
-import { getHandleValue } from '../utils/utils.js'
+import { getHandleValue, getHandleValueDomRect } from '../utils/utils.js'
 import tinycolor from 'tinycolor2'
 
 const Hue = () => {
   const barRef = useRef<HTMLCanvasElement>(null)
   const { handleChange, squareWidth, hc, setHc } = usePicker()
   const [dragging, setDragging] = useState(false)
+  const containerRef = useRef<HTMLDivElement | null>(null);
   usePaintHue(barRef, squareWidth)
 
   const stopDragging = () => {
@@ -18,23 +19,19 @@ const Hue = () => {
     setDragging(true)
   }
 
-  const handleHue = (e: any) => {
-    const newHue = getHandleValue(e) * 3.6
+  const handleHue = useCallback((newHue: number) => {
+    // const newHue = getHandleValue(e) * 3.6
     const tinyHsv = tinycolor({ h: newHue, s: hc?.s, v: hc?.v })
     const { r, g, b } = tinyHsv.toRgb()
     handleChange(`rgba(${r}, ${g}, ${b}, ${hc.a})`)
     setHc({ ...hc, h: newHue })
-  }
+  }, [handleChange, hc, setHc]);
 
-  const handleMove = (e: any) => {
-    if (dragging) {
-      handleHue(e)
-    }
-  }
+
 
   const handleClick = (e: any) => {
     if (!dragging) {
-      handleHue(e)
+      handleHue(getHandleValue(e) * 3.6)
     }
   }
 
@@ -42,16 +39,24 @@ const Hue = () => {
     const handleUp = () => {
       stopDragging()
     }
+    const handleMove = (e: MouseEvent) => {
+      if (dragging && containerRef.current !== null) {
+        handleHue(getHandleValueDomRect(e.clientX, containerRef.current.getBoundingClientRect()) * 3.6);
+      }
+    }
 
     window.addEventListener('mouseup', handleUp)
+    window.addEventListener('mousemove', handleMove)
 
     return () => {
-      window.removeEventListener('mouseup', handleUp)
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mousemove', handleUp)
     }
-  }, [])
+  }, [dragging, handleHue])
 
   return (
     <div
+      ref={containerRef}
       style={{
         height: 14,
         marginTop: 17,
@@ -59,7 +64,6 @@ const Hue = () => {
         cursor: 'ew-resize',
         position: 'relative',
       }}
-      onMouseMove={(e) => handleMove(e)}
     >
       <div
         role="button"

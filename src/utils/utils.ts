@@ -24,6 +24,12 @@ export function getHandleValue(e: any) {
   return Math.round(bounded / (adjuster / 100))
 }
 
+export function getHandleValueDomRect(clientX: number, r: DOMRect) {
+  const px = clientX  - r.left;
+  const w = r.right - r.left;
+  return Math.min(1, Math.max((px / w), 0)) * 100;
+}
+
 export function computeSquareXY(
   s: number,
   v: number,

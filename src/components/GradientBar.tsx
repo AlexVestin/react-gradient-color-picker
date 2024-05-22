@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { getHandleValue } from '../utils/utils.js'
+import { getHandleValue, getHandleValueDomRect } from '../utils/utils.js'
 import { usePicker } from '../context.js'
 import { low, high } from '../utils/formatters.js'
 import { GradientProps } from '../shared/types.js'
@@ -114,10 +114,7 @@ const GradientBar = () => {
 
   const handleMove = useCallback((e: any) => {
     if (dragging && containerRef.current !== null) {
-      const r = containerRef.current.getBoundingClientRect();
-      const px = e.clientX  - r.left;
-      const w = r.right - r.left;
-      handleGradient(currentColor, Math.min(1, Math.max((px / w), 0)) * 100);
+      handleGradient(currentColor, getHandleValueDomRect(e.clientX, containerRef.current.getBoundingClientRect()));
     }
   }, [currentColor, dragging, handleGradient]);
 

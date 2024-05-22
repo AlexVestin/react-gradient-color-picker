@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { usePicker } from '../context.js'
-import { getHandleValue } from '../utils/utils.js'
+import { getHandleValue, getHandleValueDomRect } from '../utils/utils.js'
 import {
   usePaintSat,
   usePaintLight,
@@ -24,6 +24,7 @@ const AdvBar = ({
   const { squareWidth, classes } = usePicker()
   const [dragging, setDragging] = useState<boolean>(false)
   const [handleTop, setHandleTop] = useState<number>(2)
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const left = value * (squareWidth - 18)
 
   useEffect(() => {
@@ -34,11 +35,7 @@ const AdvBar = ({
     setDragging(false)
   }
 
-  const handleMove = (e: any) => {
-    if (dragging) {
-      callback(getHandleValue(e))
-    }
-  }
+ 
 
   const handleClick = (e: any) => {
     if (!dragging) {
@@ -54,18 +51,25 @@ const AdvBar = ({
     const handleUp = () => {
       stopDragging()
     }
+    const handleMove = (e: MouseEvent) => {
+      if (dragging && containerRef.current !== null) {
+        callback(getHandleValueDomRect(e.clientX, containerRef.current.getBoundingClientRect()));
+      }
+    }
 
     window.addEventListener('mouseup', handleUp)
+    window.addEventListener('mousemove', handleMove)
 
     return () => {
       window.removeEventListener('mouseup', handleUp)
+      window.removeEventListener('mousemove', handleMove)
     }
   }, [])
 
   return (
     <div style={{ width: '100%', padding: '3px 0px 3px 0px' }}>
       <div
-        onMouseMove={(e) => handleMove(e)}
+        ref={containerRef}
         className={`${classes.cResize} ${classes.psRl}`}
       >
         <div
@@ -89,7 +93,6 @@ const AdvBar = ({
             zIndex: 10,
             textShadow: '1px 1px 1px rgba(0,0,0,.6)',
           }}
-          onMouseMove={(e) => handleMove(e)}
           onClick={(e) => handleClick(e)}
         >
           {label}
